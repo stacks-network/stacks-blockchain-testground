@@ -1,0 +1,23 @@
+name = "stacks-node"
+
+[defaults]
+builder = "exec:go"
+runner = "local:exec"
+
+[builders."docker:generic"]
+enabled = true
+  
+[runners."local:docker"]
+enabled = true
+
+[runners."cluster:swarm"]
+enabled = true
+
+[runners."cluster:k8s"]
+enabled = true
+
+[[testcases]]
+name = "node"
+instances = { min = 1, max = 200, default = 1 }
+ [testcases.params]
+  test_time_mins = { type = "int", default = 5 }
