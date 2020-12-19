@@ -14,9 +14,22 @@ RUN cp target/release/stacks-node /out
 RUN cp target/release/blockstack-cli /out
 RUN cp target/release/bitcoin-neon-controller /out
 
-FROM debian:buster-slim
 
-RUN apt update && apt install -y netcat
+FROM debian:buster-slim
+WORKDIR /src
+
+RUN apt-get update
+RUN apt-get install -y wget jq screen net-tools ncat sqlite3 xxd openssl curl procps
+
 COPY --from=build /out/ /bin/
 
+RUN curl -L https://bitcoin.org/bin/bitcoin-core-0.20.0/bitcoin-0.20.0-x86_64-linux-gnu.tar.gz -o /tmp/bitcoin.tar.gz \
+  && tar -xvzf /tmp/bitcoin.tar.gz -C / \
+  && mv /bitcoin-* /bitcoin \
+  && ln -s /bitcoin/bin/bitcoind /bin/ \
+  && ln -s /bitcoin/bin/bitcoin-cli /bin/
+
+COPY ./net-test/ ./net-test/
+
+ENV PATH="/src/target/debug:/src/net-test/bin:${PATH}"
 CMD ["stacks-node", "argon"]

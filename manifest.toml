@@ -1,23 +1,24 @@
 name = "stacks-node"
 
-[defaults]
-builder = "exec:go"
-runner = "local:exec"
+[builders]
+"docker:generic"  = { enabled = true, enable_go_build_cache = true }
 
-[builders."docker:generic"]
-enabled = true
-  
-[runners."local:docker"]
-enabled = true
+[runners]
+"local:docker"  = { enabled = true, keep_containers = false }
+"cluster:k8s"   = { enabled = true }
 
-[runners."cluster:swarm"]
-enabled = true
-
-[runners."cluster:k8s"]
-enabled = true
+[global.build_config]
+  enable_go_build_cache = true
 
 [[testcases]]
-name = "node"
-instances = { min = 1, max = 200, default = 1 }
+name = "time"
+instances = { min = 1, max = 1000 }
  [testcases.params]
-  test_time_mins = { type = "int", default = 5 }
+  # stacks_tip_height = { type = "int", default = 15 }
+  test_time_mins = { type = "int", default = 20 }
+
+[[testcases]]
+name = "blocks"
+instances = { min = 1, max = 1000 }
+ [testcases.params]
+  stacks_tip_height = { type = "int", default = 15 }

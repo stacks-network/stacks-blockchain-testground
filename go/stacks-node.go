@@ -1,120 +1,19 @@
 package main
 
 import (
-	"context"
 	"time"
+	"context"
 	"os/exec"
-	"fmt"
-	"io"
-	"bufio"
-	"encoding/json"
-	"net/http"
 	"github.com/testground/sdk-go/network"
 	"github.com/testground/sdk-go/runtime"
 	"github.com/testground/sdk-go/sync"
 )
 
-func Readln(in io.Reader, timeout time.Duration) (string, error) {
-	s := make(chan string)
-	e := make(chan error)
-
-	go func() {
-		reader := bufio.NewReader(in)
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			e <- err
-		} else {
-			s <- line
-		}
-		close(s)
-		close(e)
-	}()
-
-	select {
-	case line := <-s:
-		return line, nil
-	case err := <-e:
-		return "", err
-	case <-time.After(timeout):
-		return "", nil
-	}
-}
-
-func NodeStatus(runenv *runtime.RunEnv) {
-	client := http.Client{}
-	request, err := http.NewRequest("GET", "http://localhost:20443/v2/info", nil)
-	if err != nil {
-		runenv.RecordMessage(fmt.Sprintf("%s", err))
-		return
-	}
-
-	resp, err := client.Do(request)
-	if err != nil {
-		runenv.RecordMessage(fmt.Sprintf("%s", err))
-		return
-	}
-
-	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
-	runenv.RecordMessage(fmt.Sprintf("Stacks block height => %.0f", result["stacks_tip_height"]))
-	runenv.RecordMessage(fmt.Sprintf("Burn block height => %.0f", result["burn_block_height"]))
-}
-
-func NodeNeighbors(runenv *runtime.RunEnv) {
-	client := http.Client{}
-	request, err := http.NewRequest("GET", "http://localhost:20443/v2/neighbors", nil)
-	if err != nil {
-		runenv.RecordMessage(fmt.Sprintf("%s", err))
-		return
-	}
-
-	resp, err := client.Do(request)
-	if err != nil {
-		runenv.RecordMessage(fmt.Sprintf("%s", err))
-		return
-	}
-
-	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
-	runenv.RecordMessage(fmt.Sprintf("%s", result))
-}
-
-func HandleNode(comm_pipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd) error {
-	testLength := runenv.IntParam("test_time_mins")
-	startTime := time.Now()
-
-	for {
-		time.Sleep(15 * time.Second)
-		NodeStatus(runenv)
-	// 	timeout, _ := time.ParseDuration("5s")
-	// 	data, err := Readln(comm_pipe, timeout)
-	// 	if data != "" {
-	// 		runenv.RecordMessage(data)
-	// 	}
-	// 	if err == io.EOF {
-	// 		runenv.RecordMessage("%s", err)
-	// 		return nil
-	// 	} else if err != nil {
-	// 		runenv.RecordMessage("%s", err)
-	// 		return err
-	// 	}
-
-	 	if time.Since(startTime).Minutes() > float64(testLength) {
-	 		runenv.RecordMessage("Finished running after %d minutes", testLength)
-	 		return nil
-	 	}
-	 }
-
-	c.Wait()
-	return nil
-
-}
-
 func StacksNode(runenv *runtime.RunEnv) error {
-    startState := sync.State("start")
-    btcState := sync.State("bitcoin-start")
-    ctx := context.Background()
-    btcInformation := sync.NewTopic("btc-address", "")
+	startState := sync.State("start")
+	btcState := sync.State("bitcoin-start")
+	ctx := context.Background()
+	btcInformation := sync.NewTopic("btc-address", "")
 
 	// instantiate a sync service client, binding it to the RunEnv.
 	client := sync.MustBoundClient(ctx, runenv)

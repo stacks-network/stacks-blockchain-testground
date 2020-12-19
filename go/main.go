@@ -16,10 +16,10 @@ func main() {
 // depending on the name of the test case.
 func runf(runenv *runtime.RunEnv) error {
 	switch c := runenv.TestCase; c {
-    case "node":
-        return StacksNode(runenv)
-	default:
-		msg := fmt.Sprintf("Unknown Testcase %s", c)
-		return errors.New(msg)
+		case "blocks":
+			return StacksNode(runenv)
+		default:
+			msg := fmt.Sprintf("Unknown Testcase %s", c)
+			return errors.New(msg)
 	}
 }

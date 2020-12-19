@@ -1,0 +1,38 @@
+[metadata]
+  name = "basic"
+  author = ""
+
+[global]
+  plan = "stacks-node"
+  case = "blocks"
+  total_instances = 4
+  builder = "docker:generic"
+  runner = "local:docker"
+
+[[groups]]
+  id = "group1"
+  [groups.resources]
+    memory = ""
+    cpu = ""
+  [groups.instances]
+    count = 4
+    percentage = 0.0
+  [groups.build]
+  [groups.run]
+    artifact = ""
+    [groups.run.test_params]
+      stacks_tip_height = "30"
+
+# [[groups]]
+#   id = "group2"
+#   [groups.resources]
+#     memory = ""
+#     cpu = ""
+#   [groups.instances]
+#     count = 2
+#     percentage = 0.0
+#   [groups.build]
+#   [groups.run]
+#     artifact = ""
+#     [groups.run.test_params]
+#       test_time_mins = "5"
