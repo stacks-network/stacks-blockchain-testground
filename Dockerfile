@@ -4,7 +4,7 @@ ENV CGO_ENABLED 0
 COPY . .
 RUN cd plan/go && go build -a -o /testplan
 
-FROM stacks-blockchain:testground-base
+FROM blockstack/stacks-blockchain:testground-base
 COPY --from=builder /testplan /testplan
 COPY --from=builder /build/plan/scripts /scripts
 ENV BLOCKSTACK_DEBUG 0

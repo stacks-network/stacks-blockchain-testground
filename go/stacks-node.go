@@ -1,8 +1,8 @@
 package main
 
 import (
-	"time"
 	"context"
+	"time"
 	"os/exec"
 	"github.com/testground/sdk-go/network"
 	"github.com/testground/sdk-go/runtime"
@@ -13,6 +13,8 @@ func StacksNode(runenv *runtime.RunEnv) error {
 	startState := sync.State("start")
 	btcState := sync.State("bitcoin-start")
 	ctx := context.Background()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Duration(runenv.IntParam("test_time_mins"))*time.Second)
+	// defer cancel()
 	btcInformation := sync.NewTopic("btc-address", "")
 
 	// instantiate a sync service client, binding it to the RunEnv.
@@ -27,9 +29,9 @@ func StacksNode(runenv *runtime.RunEnv) error {
 	netclient.MustWaitNetworkInitialized(ctx)
 	runenv.RecordMessage("network initilization complete")
 
-	ip_addr, ip_err := netclient.GetDataNetworkIP()
-	if ip_err != nil {
-		return ip_err
+	ipAddr, ipErr := netclient.GetDataNetworkIP()
+	if ipErr != nil {
+		return ipErr
 	}
 
 	// signal entry in the 'enrolled' state, and obtain a sequence number.
@@ -39,9 +41,9 @@ func StacksNode(runenv *runtime.RunEnv) error {
 
 	// if we're the first instance to signal, we'll become the LEADER.
 	if seq == 1 {
-		client.MustPublish(ctx, btcInformation, ip_addr.String())
+		client.MustPublish(ctx, btcInformation, ipAddr.String())
 
-		cmd := exec.Command("/scripts/simple-start.sh", "master", ip_addr.String())
+		cmd := exec.Command("/scripts/simple-start.sh", "master", ipAddr.String())
 		pipe, err := cmd.StdoutPipe()
 		if err != nil {
 			return err
@@ -65,11 +67,11 @@ func StacksNode(runenv *runtime.RunEnv) error {
 
 		ch := make(chan string)
 		client.MustSubscribe(ctx, btcInformation, ch)
-		btc_addr := <-ch
+		btcAddr := <-ch
 
-		runenv.RecordMessage("Master started on host address %s", btc_addr)
+		runenv.RecordMessage("Master started on host address %s", btcAddr)
 
-		cmd := exec.Command("/scripts/simple-start.sh", "miner", ip_addr.String(), btc_addr)
+		cmd := exec.Command("/scripts/simple-start.sh", "miner", ipAddr.String(), btcAddr)
 		pipe, err := cmd.StdoutPipe()
 		if err != nil {
 			return err

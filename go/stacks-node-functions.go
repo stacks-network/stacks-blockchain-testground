@@ -53,10 +53,11 @@ func NodeNeighbors(runenv *runtime.RunEnv) {
 
 	var result map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&result)
-  len_inbound := len(result["inbound"].([]interface{}))
-  len_outbound := len(result["inbound"].([]interface{}))
-  if len_inbound > 0 || len_outbound > 0 {
-    runenv.RecordMessage(fmt.Sprintf("Inbound/Outbound Neighbors => %v/%v", len_inbound, len_outbound))
+  lenInbound := len(result["inbound"].([]interface{}))
+  lenOutbound := len(result["inbound"].([]interface{}))
+  if lenInbound > 0 || lenOutbound > 0 {
+    //runenv.RecordMessage(fmt.Sprintf("Neighbors => Inbound [ %v ] :: Outbound [ %v ]", lenInbound, lenOutbound))
+    runenv.RecordMessage(fmt.Sprintf("Inbound/Outbound Neighbors => %v/%v", lenInbound, lenOutbound))
   }
   return
 }
@@ -80,7 +81,7 @@ func NodeStatus(runenv *runtime.RunEnv) (result float64, err error) {
 	return item["stacks_tip_height"].(float64), nil
 }
 
-func HandleNode(comm_pipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd) error {
+func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd) error {
 	tipHeight := float64(runenv.IntParam("stacks_tip_height"))
 	startTime := time.Now()
 	for {
