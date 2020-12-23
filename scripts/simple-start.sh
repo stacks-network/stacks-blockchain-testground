@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+# set -x
 cd /src/net-test/tests/
 source ./config.sh
 source "$__BIN/start.sh"

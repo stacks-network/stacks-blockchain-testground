@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"time"
+	// "io"
+	"os"
 	"os/exec"
 	"github.com/testground/sdk-go/network"
 	"github.com/testground/sdk-go/runtime"
@@ -44,7 +46,13 @@ func StacksNode(runenv *runtime.RunEnv) error {
 		client.MustPublish(ctx, btcInformation, ipAddr.String())
 
 		cmd := exec.Command("/scripts/simple-start.sh", "master", ipAddr.String())
-		pipe, err := cmd.StdoutPipe()
+		// outfile, err := os.Create("/src/net-test/mnt/simple-start-master.log")
+	  // cmd.Stdout = io.MultiWriter(os.Stdout, outfile)
+	  // cmd.Stderr = io.MultiWriter(os.Stdout, outfile)
+		// // pipe, err := cmd.StdoutPipe()
+		outfile, err := os.Create("/src/net-test/mnt/simple-start.log")
+	  cmd.Stdout = outfile
+	  cmd.Stderr = outfile
 		if err != nil {
 			return err
 		}
@@ -57,7 +65,7 @@ func StacksNode(runenv *runtime.RunEnv) error {
 		time.Sleep(5 * time.Second)
 		client.MustSignalEntry(ctx, btcState)
 
-		return HandleNode(pipe, runenv, cmd)
+		return HandleNode(outfile, runenv, cmd, "")
 	} else {
 		// wait until leader has started Bitcoin.
 		err := <-client.MustBarrier(ctx, btcState, 1).C
@@ -70,9 +78,14 @@ func StacksNode(runenv *runtime.RunEnv) error {
 		btcAddr := <-ch
 
 		runenv.RecordMessage("Master started on host address %s", btcAddr)
-
 		cmd := exec.Command("/scripts/simple-start.sh", "miner", ipAddr.String(), btcAddr)
-		pipe, err := cmd.StdoutPipe()
+		// outfile, err := os.Create("/src/net-test/mnt/simple-start-miner.log")
+	  // cmd.Stdout = io.MultiWriter(cmd.StdoutPipe(), outfile)
+	  // cmd.Stderr = io.MultiWriter(cmd.StdoutPipe(), outfile)
+		// // pipe, err := cmd.StdoutPipe()
+		outfile, err := os.Create("/src/net-test/mnt/simple-start.log")
+	  cmd.Stdout = outfile
+	  cmd.Stderr = outfile
 		if err != nil {
 			return err
 		}
@@ -83,6 +96,8 @@ func StacksNode(runenv *runtime.RunEnv) error {
 		}
 
 		time.Sleep(5 * time.Second)
-		return HandleNode(pipe, runenv, cmd)
+		// s := []string{"28443"}
+	  // rawConnect(btcAddr, s)
+		return HandleNode(outfile, runenv, cmd, btcAddr)
 	}
 }

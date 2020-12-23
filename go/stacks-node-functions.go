@@ -5,6 +5,7 @@ import (
 	"os/exec"
 	"fmt"
 	"io"
+	"net"
 	"bufio"
 	"encoding/json"
 	"net/http"
@@ -62,9 +63,18 @@ func NodeNeighbors(runenv *runtime.RunEnv) {
   return
 }
 
-func NodeStatus(runenv *runtime.RunEnv) (result float64, err error) {
+func NodeStatus(runenv *runtime.RunEnv, btcAddr string) (result float64, err error) {
 	client := http.Client{}
 	request, err := http.NewRequest("GET", "http://localhost:20443/v2/info", nil)
+	btcPort := []string{"28443"}
+	if len(btcAddr) > 0 {
+		btcConn := btcConnect(btcAddr, btcPort)
+		if !btcConn {
+			runenv.RecordMessage("BTC Connection is closed -> Stopping this instance")
+			runenv.RecordMessage("Setting an artificial stacks_tip_height to: 1000000")
+			return float64(1000000), nil
+		}
+	}
 	if err != nil {
 		runenv.RecordMessage(fmt.Sprintf("%s", err))
 		return
@@ -77,16 +87,34 @@ func NodeStatus(runenv *runtime.RunEnv) (result float64, err error) {
 	var item map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&item)
 	runenv.RecordMessage(fmt.Sprintf("Stacks block height => %.0f :: Burn block height => %.0f", item["stacks_tip_height"], item["burn_block_height"]))
-  NodeNeighbors(runenv)
+	// Extra info to tell us how many neighbors each instance has
+	// NodeNeighbors(runenv)
 	return item["stacks_tip_height"].(float64), nil
 }
 
-func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd) error {
+func btcConnect(host string, ports []string) bool {
+	for _, port := range ports {
+		timeout := (5*time.Second)
+		// timeout := time.Second
+		conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), timeout)
+		if err != nil {
+			fmt.Println("BTC Connection error:", err)
+			return false
+		}
+		if conn != nil {
+			defer conn.Close()
+			fmt.Println("BTC Connection Open: ", net.JoinHostPort(host, port))
+		}
+	}
+	return true
+}
+
+func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd, btcAddr string) error {
 	tipHeight := float64(runenv.IntParam("stacks_tip_height"))
 	startTime := time.Now()
 	for {
 		time.Sleep(15 * time.Second)
-		output,nil := NodeStatus(runenv)
+		output,nil := NodeStatus(runenv, btcAddr)
 		if ( output > tipHeight ) {
 			runenv.RecordMessage("Finished running after %v blocks (%v minutes)", output, time.Since(startTime).Minutes())
 			return nil
