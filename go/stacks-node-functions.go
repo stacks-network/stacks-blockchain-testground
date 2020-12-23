@@ -103,7 +103,7 @@ func btcConnect(host string, ports []string) bool {
 		}
 		if conn != nil {
 			defer conn.Close()
-			fmt.Println("BTC Connection Open: ", net.JoinHostPort(host, port))
+			// fmt.Println("BTC Connection Open: ", net.JoinHostPort(host, port))
 		}
 	}
 	return true
