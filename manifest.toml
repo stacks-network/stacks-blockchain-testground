@@ -22,3 +22,6 @@ name = "blocks"
 instances = { min = 1, max = 1000 }
  [testcases.params]
   stacks_tip_height = { type = "int", default = 15 }
+  sortition_fraction = { type = "int", default = 90 }
+  fork_fraction = { type = "int", default = 90 }
+  num_blocks = { type = "int", default = 100 }

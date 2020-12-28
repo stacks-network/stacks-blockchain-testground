@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"time"
-	// "io"
+	"fmt"
 	"os"
 	"os/exec"
 	"github.com/testground/sdk-go/network"
@@ -54,11 +54,14 @@ func StacksNode(runenv *runtime.RunEnv) error {
 	  cmd.Stdout = outfile
 	  cmd.Stderr = outfile
 		if err != nil {
+			runenv.RecordMessage("Error Creating Logfile:", err)
 			return err
 		}
 
 		err = cmd.Start()
 		if err != nil {
+			runenv.RecordMessage("Error Running Command:", cmd)
+			runenv.RecordMessage(fmt.Sprintf("%s", err))
 			return err
 		}
 
@@ -87,11 +90,14 @@ func StacksNode(runenv *runtime.RunEnv) error {
 	  cmd.Stdout = outfile
 	  cmd.Stderr = outfile
 		if err != nil {
+			runenv.RecordMessage("Error Creating Logfile:", err)
 			return err
 		}
 
 		err = cmd.Start()
 		if err != nil {
+			runenv.RecordMessage("Error Running Command:", cmd)
+			runenv.RecordMessage(fmt.Sprintf("%s", err))
 			return err
 		}
 

@@ -19,7 +19,7 @@ FROM debian:buster-slim
 WORKDIR /src
 
 RUN apt-get update
-RUN apt-get install -y wget jq screen net-tools ncat sqlite3 xxd openssl curl procps
+RUN apt-get install -y wget jq screen net-tools ncat sqlite3 xxd openssl curl procps vim-common
 
 COPY --from=build /out/ /bin/
 
