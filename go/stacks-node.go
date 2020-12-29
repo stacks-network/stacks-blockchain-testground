@@ -68,7 +68,7 @@ func StacksNode(runenv *runtime.RunEnv) error {
 		time.Sleep(5 * time.Second)
 		client.MustSignalEntry(ctx, btcState)
 
-		return HandleNode(outfile, runenv, cmd, "")
+		return HandleNode(outfile, runenv, cmd, "", seq)
 	} else {
 		// wait until leader has started Bitcoin.
 		err := <-client.MustBarrier(ctx, btcState, 1).C
@@ -104,6 +104,6 @@ func StacksNode(runenv *runtime.RunEnv) error {
 		time.Sleep(5 * time.Second)
 		// s := []string{"28443"}
 	  // rawConnect(btcAddr, s)
-		return HandleNode(outfile, runenv, cmd, btcAddr)
+		return HandleNode(outfile, runenv, cmd, btcAddr, seq)
 	}
 }

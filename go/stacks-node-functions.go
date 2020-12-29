@@ -50,7 +50,7 @@ func NodeNeighbors(runenv *runtime.RunEnv) {
 
 	resp, err := client.Do(request)
 	if err != nil {
-		runenv.RecordMessage(fmt.Sprintf("Waiting for miner: [%s]", err))
+		runenv.RecordMessage(fmt.Sprintf("Waiting for node: [%s]", err))
 		return
 	}
 
@@ -65,11 +65,11 @@ func NodeNeighbors(runenv *runtime.RunEnv) {
   return
 }
 
-func NodeStatus(runenv *runtime.RunEnv, btcAddr string) (result float64, err error) {
+func NodeStatus(runenv *runtime.RunEnv, btcAddr string, seq int64) (result float64, err error) {
 	client := http.Client{}
 	request, err := http.NewRequest("GET", "http://localhost:20443/v2/info", nil)
 	btcPort := []string{"28443"}
-	if len(btcAddr) > 0 {
+	if (len(btcAddr) > 0 && seq != 1) {
 		btcConn := btcConnect(btcAddr, btcPort)
 		if !btcConn {
 			runenv.RecordMessage("BTC Connection is closed -> Stopping this instance")
@@ -83,7 +83,7 @@ func NodeStatus(runenv *runtime.RunEnv, btcAddr string) (result float64, err err
 	}
 	resp, err := client.Do(request)
 	if err != nil {
-		runenv.RecordMessage(fmt.Sprintf("Waiting for miner: [%s]", err))
+		runenv.RecordMessage(fmt.Sprintf("Waiting for node: [%s]", err))
 		return
 	}
 	var item map[string]interface{}
@@ -112,36 +112,38 @@ func btcConnect(host string, ports []string) bool {
 }
 
 func chainQuality(runenv *runtime.RunEnv, sortitionFraction int, forkFraction int, numBlocks int) bool {
-  runenv.RecordMessage("sortitionFraction: ", sortitionFraction)
-  runenv.RecordMessage("forkFraction:      ", forkFraction)
-  runenv.RecordMessage("numBlocks:         ", numBlocks)
+  fmt.Println("sortitionFraction: ", sortitionFraction)
+  fmt.Println("forkFraction:      ", forkFraction)
+  fmt.Println("numBlocks:         ", numBlocks)
   cmd := exec.Command("/scripts/chain-quality.sh", strconv.Itoa(sortitionFraction), strconv.Itoa(forkFraction), strconv.Itoa(numBlocks))
   outfile, err  := os.Create("/src/net-test/mnt/chain-quality.log")
   if err != nil {
-    runenv.RecordMessage("Error Creating logfile: ", cmd, err)
+    fmt.Println("Error Creating logfile: ", cmd, err)
   }
   cmd.Stdout = outfile
   cmd.Stderr = outfile
-  runenv.RecordMessage("Running: ", cmd)
+  fmt.Println("Running: ", cmd)
   if err := cmd.Run(); err != nil {
-      fmt.Println( "Error:", err )
+      // fmt.Println( "Error: ", err )
       return false
   }
   return true
 }
 
-func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd, btcAddr string) error {
+func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd, btcAddr string, seq int64) error {
 	tipHeight := float64(runenv.IntParam("stacks_tip_height"))
 	startTime := time.Now()
 	for {
 		time.Sleep(15 * time.Second)
-		output,nil := NodeStatus(runenv, btcAddr)
+		output,nil := NodeStatus(runenv, btcAddr, seq)
 		if ( output > tipHeight ) {
-			checkChainQuality := chainQuality(runenv, runenv.IntParam("sortition_fraction"),runenv.IntParam("fork_fraction"),runenv.IntParam("num_blocks"))
-			if !checkChainQuality {
-				runenv.RecordMessage("[ FAIL ] - check_chain_quality did not pass inspection")
-			} else {
-				runenv.RecordMessage("[ PASS ] - check_chain_quality passed inspection")
+			if ( seq == 1 ) {
+				checkChainQuality := chainQuality(runenv, runenv.IntParam("sortition_fraction"),runenv.IntParam("fork_fraction"),runenv.IntParam("num_blocks"))
+				if !checkChainQuality {
+					runenv.RecordMessage("[ FAIL ] - check_chain_quality did not pass inspection: %v", checkChainQuality)
+				} else {
+					runenv.RecordMessage("[ PASS ] - check_chain_quality passed inspection %v", checkChainQuality)
+				}
 			}
 			runenv.RecordMessage("Finished running after %v blocks (%v minutes)", output, time.Since(startTime).Minutes())
 			return nil
