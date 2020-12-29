@@ -137,7 +137,12 @@ func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd, btcAddr
 		time.Sleep(15 * time.Second)
 		output,nil := NodeStatus(runenv, btcAddr)
 		if ( output > tipHeight ) {
-			chainQuality(runenv, runenv.IntParam("sortition_fraction"),runenv.IntParam("fork_fraction"),runenv.IntParam("num_blocks"))
+			checkChainQuality := chainQuality(runenv, runenv.IntParam("sortition_fraction"),runenv.IntParam("fork_fraction"),runenv.IntParam("num_blocks"))
+			if !checkChainQuality {
+				runenv.RecordMessage("[ FAIL ] - check_chain_quality did not pass inspection")
+			} else {
+				runenv.RecordMessage("[ PASS ] - check_chain_quality passed inspection")
+			}
 			runenv.RecordMessage("Finished running after %v blocks (%v minutes)", output, time.Since(startTime).Minutes())
 			return nil
 		}
