@@ -8,38 +8,12 @@ import (
 	"strconv"
 	"os"
 	"net"
-	"bufio"
 	"encoding/json"
 	"net/http"
 	"github.com/testground/sdk-go/runtime"
 )
 
-func Readln(in io.Reader, timeout time.Duration) (string, error) {
-	s := make(chan string)
-	e := make(chan error)
-
-	go func() {
-		reader := bufio.NewReader(in)
-		line, err := reader.ReadString('\n')
-		if err != nil {
-			e <- err
-		} else {
-			s <- line
-		}
-		close(s)
-		close(e)
-	}()
-
-	select {
-	case line := <-s:
-		return line, nil
-	case err := <-e:
-		return "", err
-	case <-time.After(timeout):
-		return "", nil
-	}
-}
-
+// NodeNeighbors - Retrieve the node's neighbors
 func NodeNeighbors(runenv *runtime.RunEnv) {
 	client := http.Client{}
 	request, err := http.NewRequest("GET", "http://localhost:20443/v2/neighbors", nil)
@@ -65,12 +39,13 @@ func NodeNeighbors(runenv *runtime.RunEnv) {
   return
 }
 
+// NodeStatus - Retrieve the node's status
 func NodeStatus(runenv *runtime.RunEnv, btcAddr string, seq int64) (result float64, err error) {
 	client := http.Client{}
 	request, err := http.NewRequest("GET", "http://localhost:20443/v2/info", nil)
 	btcPort := []string{"28443"}
 	if (len(btcAddr) > 0 && seq != 1) {
-		btcConn := btcConnect(btcAddr, btcPort)
+		btcConn := btcConnect(runenv, btcAddr, btcPort)
 		if !btcConn {
 			runenv.RecordMessage("BTC Connection is closed -> Stopping this instance")
 			runenv.RecordMessage("Setting an artificial stacks_tip_height to: 1000000")
@@ -94,42 +69,44 @@ func NodeStatus(runenv *runtime.RunEnv, btcAddr string, seq int64) (result float
 	return item["stacks_tip_height"].(float64), nil
 }
 
-func btcConnect(host string, ports []string) bool {
+// Check if BTC is accessible
+func btcConnect(runenv *runtime.RunEnv, host string, ports []string) bool {
 	for _, port := range ports {
 		timeout := (5*time.Second)
 		// timeout := time.Second
 		conn, err := net.DialTimeout("tcp", net.JoinHostPort(host, port), timeout)
 		if err != nil {
-			// fmt.Println("BTC Connection error:", err)
+			// BTC Connection is not open
+			runenv.RecordMessage(fmt.Sprintf("Error Connecting to BTC: %s", err))
 			return false
 		}
 		if conn != nil {
+			// BTC connection is successful
+			// fmt.Println("BTC Connection Open: ", net.JoinHostPort(host, port))
 			defer conn.Close()
-			//fmt.Println("BTC Connection Open: ", net.JoinHostPort(host, port))
 		}
 	}
 	return true
 }
 
+// Check the chainstate quality
 func chainQuality(runenv *runtime.RunEnv, sortitionFraction int, forkFraction int, numBlocks int) bool {
-  fmt.Println("sortitionFraction: ", sortitionFraction)
-  fmt.Println("forkFraction:      ", forkFraction)
-  fmt.Println("numBlocks:         ", numBlocks)
-  cmd := exec.Command("/scripts/chain-quality.sh", strconv.Itoa(sortitionFraction), strconv.Itoa(forkFraction), strconv.Itoa(numBlocks))
-  outfile, err  := os.Create("/src/net-test/mnt/chain-quality.log")
-  if err != nil {
-    fmt.Println("Error Creating logfile: ", cmd, err)
-  }
-  cmd.Stdout = outfile
-  cmd.Stderr = outfile
-  fmt.Println("Running: ", cmd)
-  if err := cmd.Run(); err != nil {
-      // fmt.Println( "Error: ", err )
-      return false
-  }
-  return true
+	cmd := exec.Command("/scripts/chain-quality.sh", strconv.Itoa(sortitionFraction), strconv.Itoa(forkFraction), strconv.Itoa(numBlocks))
+	outfile, err  := os.Create("/src/net-test/mnt/chain-quality.log")
+	if err != nil {
+		runenv.RecordMessage("Error Creating Logfile:", err)
+	}
+	cmd.Stdout = outfile
+	cmd.Stderr = outfile
+	if err := cmd.Run(); err != nil {
+		runenv.RecordMessage("Error Running Command:", cmd)
+		runenv.RecordMessage(fmt.Sprintf("%s", err))
+		return false
+	}
+	return true
 }
 
+// HandleNode Function
 func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd, btcAddr string, seq int64) error {
 	tipHeight := float64(runenv.IntParam("stacks_tip_height"))
 	startTime := time.Now()
