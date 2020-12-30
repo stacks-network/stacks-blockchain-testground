@@ -47,9 +47,10 @@ func NodeStatus(runenv *runtime.RunEnv, btcAddr string, seq int64) (result float
 	if (len(btcAddr) > 0 && seq != 1) {
 		btcConn := btcConnect(runenv, btcAddr, btcPort)
 		if !btcConn {
+			fakeHeight := (runenv.IntParam("stacks_tip_height")+10) // ensure we'll cross the threshold
 			runenv.RecordMessage("BTC Connection is closed -> Stopping this instance")
-			runenv.RecordMessage("Setting an artificial stacks_tip_height to: 1000000")
-			return float64(1000000), nil
+			runenv.RecordMessage("Setting an artificial stacks_tip_height to: %v", fakeHeight)
+			return float64(fakeHeight), nil
 		}
 	}
 	if err != nil {
@@ -110,11 +111,14 @@ func chainQuality(runenv *runtime.RunEnv, sortitionFraction int, forkFraction in
 func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd, btcAddr string, seq int64) error {
 	tipHeight := float64(runenv.IntParam("stacks_tip_height"))
 	startTime := time.Now()
+	runenv.RecordMessage("verify_chain1: %v", runenv.BooleanParam("verify_chain"))
+	verify_chain := runenv.BooleanParam("verify_chain")
+	runenv.RecordMessage("verify_chain2: %v", verify_chain)
 	for {
 		time.Sleep(15 * time.Second)
 		output,nil := NodeStatus(runenv, btcAddr, seq)
-		if ( output > tipHeight ) {
-			if ( seq == 1 ) {
+		if ( output >= tipHeight ) {
+			if ( seq == 1 && verify_chain) {
 				checkChainQuality := chainQuality(runenv, runenv.IntParam("sortition_fraction"),runenv.IntParam("fork_fraction"),runenv.IntParam("num_blocks"))
 				if !checkChainQuality {
 					runenv.RecordMessage("[ FAIL ] - check_chain_quality did not pass inspection: %v", checkChainQuality)

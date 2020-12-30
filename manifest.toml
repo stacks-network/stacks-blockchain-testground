@@ -10,12 +10,11 @@ name = "stacks-node"
 [global.build_config]
   enable_go_build_cache = true
 
-[[testcases]]
-name = "time"
-instances = { min = 1, max = 1000 }
- [testcases.params]
-  # stacks_tip_height = { type = "int", default = 15 }
-  test_time_mins = { type = "int", default = 20 }
+# [[testcases]]
+# name = "time"
+# instances = { min = 1, max = 1000 }
+#  [testcases.params]
+#   test_time_mins = { type = "int", default = 20 }
 
 [[testcases]]
 name = "blocks"
@@ -25,3 +24,4 @@ instances = { min = 1, max = 1000 }
   sortition_fraction = { type = "int", default = 90 }
   fork_fraction = { type = "int", default = 90 }
   num_blocks = { type = "int", default = 100 }
+  verify_chain = { type = "bool", default = true }
