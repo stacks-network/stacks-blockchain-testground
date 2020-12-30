@@ -17,13 +17,14 @@ RUN cp target/release/bitcoin-neon-controller /out
 
 FROM debian:buster-slim
 WORKDIR /src
+ARG BTC_VERSION=20.0.0
 
 RUN apt-get update
 RUN apt-get install -y wget jq screen net-tools ncat sqlite3 xxd openssl curl procps vim-common
 
 COPY --from=build /out/ /bin/
 
-RUN curl -L https://bitcoin.org/bin/bitcoin-core-0.20.0/bitcoin-0.20.0-x86_64-linux-gnu.tar.gz -o /tmp/bitcoin.tar.gz \
+RUN curl -L https://bitcoin.org/bin/bitcoin-core-${BTC_VERSION}/bitcoin-${BTC_VERSION}-x86_64-linux-gnu.tar.gz -o /tmp/bitcoin.tar.gz \
   && tar -xvzf /tmp/bitcoin.tar.gz -C / \
   && mv /bitcoin-* /bitcoin \
   && ln -s /bitcoin/bin/bitcoind /bin/ \

@@ -21,7 +21,7 @@
   [groups.run]
     artifact = ""
     [groups.run.test_params]
-      stacks_tip_height = "30"
+      stacks_tip_height = "150"
 
 # [[groups]]
 #   id = "group2"
