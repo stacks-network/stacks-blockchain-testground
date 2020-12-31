@@ -17,7 +17,7 @@ RUN cp target/release/bitcoin-neon-controller /out
 
 FROM debian:buster-slim
 WORKDIR /src
-ARG BTC_VERSION=20.0.0
+ARG BTC_VERSION=0.20.0
 
 RUN apt-get update
 RUN apt-get install -y wget jq screen net-tools ncat sqlite3 xxd openssl curl procps vim-common
