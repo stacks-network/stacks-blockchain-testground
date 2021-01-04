@@ -59,6 +59,7 @@ export TESTGROUND_HOME=$TESTGROUND_ROOT/testground
 export STACKS_BLOCKCHAIN_DIR=$TESTGROUND_ROOT/stacks-blockchain
 mkdir -p $TESTGROUND_ROOT
 git clone https://github.com/blockstack/stacks-blockchain.git $STACKS_BLOCKCHAIN_DIR
+sed -i -e 's|block_time = 60000|block_time = 120000|' $STACKS_BLOCKCHAIN_DIR/net-test/etc/bitcoin-neon-controller.toml.in
 ```
 
 Download testground and install/configure:
