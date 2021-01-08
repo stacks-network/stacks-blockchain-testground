@@ -57,11 +57,11 @@ aws_secret_access_key = <aws_access_key_id>
 
 `~/.testground`:
 ```bash
-export TESTGROUND_NAME=wileyj # edit this to your name
+export TESTGROUND_NAME=name # edit this to your name
 export TESTGROUND_ROOT=$HOME/Git/blockstack/testgrounds
 export TESTGROUND_HOME=$HOME/Git/blockstack/testgrounds/testground
 export STACKS_BLOCKCHAIN_DIR=$TESTGROUND_ROOT/stacks-blockchain
-export CLUSTER_NAME=$TESTGROUND_NAME.stxtg.xyz
+export CLUSTER_NAME=$TESTGROUND_NAME.domain.xyz
 export KOPS_STATE_STORE=s3://blockstack-testground-kops
 export AWS_REGION=us-west-2
 export ZONE_A=us-west-2a
@@ -80,7 +80,7 @@ EOF
 ### create ssh key for kops (or use existing key)
 *if using existing key, edit `~/.testground` `PUBKEY` to reflect this*
 ```bash
-ssh-keygen -t rsa -b 4096 -C "jwiley@blockstack.com" \
+ssh-keygen -t rsa -b 4096 -C "email address" \
   -f ~/.ssh/testground_rsa -q -P ""
 ```
 
@@ -92,9 +92,6 @@ aws s3api create-bucket \
   --region us-west-2 \
   --create-bucket-configuration LocationConstraint=us-west-2
 ```
-### route hosted zone (required by kops)
-namecheap domain `stxtg.xyz` was purchased for this
-
 
 ### Helm repos
 ```bash
@@ -125,7 +122,7 @@ Cluster nodes are Ready
 
 Install default container limits
 
-Unable to connect to the server: dial tcp: lookup api.wileyj.stxtg.xyz: no such host
+Unable to connect to the server: dial tcp: lookup api.name.domain.xyz: no such host
 Error on line 78
 ```
 - verify the cluster api is responding (it will work once DNS is propagated)
@@ -185,7 +182,7 @@ $ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/la
 
 ### SSH to host
 ```bash
-ssh -i ~/.ssh/id_rsa ubuntu@api.testground.stxtg.xyz
+ssh -i ~/.ssh/id_rsa ubuntu@api.testground.domain.xyz
 ```
 
 
