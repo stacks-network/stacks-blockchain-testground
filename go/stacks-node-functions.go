@@ -111,9 +111,9 @@ func chainQuality(runenv *runtime.RunEnv, sortitionFraction int, forkFraction in
 func HandleNode(commPipe io.Reader, runenv *runtime.RunEnv, c *exec.Cmd, btcAddr string, seq int64) error {
 	tipHeight := float64(runenv.IntParam("stacks_tip_height"))
 	startTime := time.Now()
-	runenv.RecordMessage("verify_chain1: %v", runenv.BooleanParam("verify_chain"))
+	// runenv.RecordMessage("verify_chain1: %v", runenv.BooleanParam("verify_chain"))
 	verify_chain := runenv.BooleanParam("verify_chain")
-	runenv.RecordMessage("verify_chain2: %v", verify_chain)
+	// runenv.RecordMessage("verify_chain2: %v", verify_chain)
 	for {
 		time.Sleep(15 * time.Second)
 		output,nil := NodeStatus(runenv, btcAddr, seq)
