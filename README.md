@@ -36,7 +36,7 @@ Import this test plan:
 ```bash
 testground plan import \
   --git \
-  --from https://github.com/kantai/stacks-blockchain-testground \
+  --from https://github.com/blockstack/stacks-blockchain-testground \
   --name stacks-node
 ```
 
