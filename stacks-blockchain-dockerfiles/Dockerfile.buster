@@ -7,12 +7,12 @@ COPY . .
 RUN mkdir /out
 
 RUN cd testnet/stacks-node && cargo build --features monitoring_prom,slog_json --release
-RUN cd testnet/bitcoin-neon-controller && cargo build --release
+RUN cd testnet/puppet-chain && cargo build --release
 RUN cargo build --features monitoring_prom,slog_json --release
 
 RUN cp target/release/stacks-node /out
 RUN cp target/release/blockstack-cli /out
-RUN cp target/release/bitcoin-neon-controller /out
+RUN cp target/release/puppet-chain /out
 
 
 FROM debian:buster-slim
@@ -33,4 +33,4 @@ RUN curl -L https://bitcoin.org/bin/bitcoin-core-${BTC_VERSION}/bitcoin-${BTC_VE
 COPY ./net-test/ ./net-test/
 
 ENV PATH="/src/target/debug:/src/net-test/bin:${PATH}"
-CMD ["stacks-node", "argon"]
+CMD ["stacks-node", "krypton"]

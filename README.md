@@ -115,7 +115,6 @@ testground \
     --runner=local:docker \
     --builder=docker:generic \
     --instances=2 \
-    --collect \
     --tp stacks_tip_height=10
 ```
 
