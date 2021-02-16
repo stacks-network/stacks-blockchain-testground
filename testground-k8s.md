@@ -14,7 +14,7 @@ region = "us-west-2"
 influxdb_endpoint = "http://testground-influxdb:8086"
 EOF
 nohup testground daemon &
-testground plan import --git --from https://github.com/kantai/stacks-blockchain-testground --name stacks-node
+testground plan import --git --from https://github.com/blockstack/stacks-blockchain-testground --name stacks-node
 git clone https://github.com/blockstack/stacks-blockchain.git $STACKS_BLOCKCHAIN_DIR
 sed -i -e 's|block_time = 60000|block_time = 120000|' $STACKS_BLOCKCHAIN_DIR/net-test/etc/bitcoin-neon-controller.toml.in
 
