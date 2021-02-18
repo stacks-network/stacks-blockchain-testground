@@ -107,7 +107,8 @@ func StacksNode(runenv *runtime.RunEnv) error {
 		return HandleNode(outfile, runenv, cmd, btcAddr, seq)
 	} else {
 		// wait until the burn chain has started progressing
-		//time.Sleep(210 * time.Second)
+		time.Sleep(210 * time.Second)
+
 		// wait until leader has started Bitcoin.
 		err := <-client.MustBarrier(ctx, btcState, 1).C
 		if err != nil {
